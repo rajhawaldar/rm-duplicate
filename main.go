@@ -9,6 +9,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var (
@@ -53,9 +54,11 @@ func main() {
 	for _, list := range dList {
 		if len(list) > 1 {
 			for _, file := range list[1:] {
-				os.Remove(file)
-				fmt.Println(file, "deleted!")
-				deleteCount++
+				if !strings.Contains(file, ".git") {
+					os.Remove(file)
+					fmt.Println(file, "deleted!")
+					deleteCount++
+				}
 			}
 		}
 	}
