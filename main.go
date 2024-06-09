@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crypto/sha256"
+	"crypto/md5"
 	"flag"
 	"fmt"
 	"io"
@@ -24,6 +24,8 @@ type File struct {
 	remove bool
 }
 
+var count int
+
 type Record map[string][]File
 
 var exclude []string
@@ -39,7 +41,7 @@ func checkExcludedPathExist(path string) bool {
 func main() {
 	flag.Parse()
 	fileRecords := make(Record)
-	exclude = append(exclude, ".git", ".vscode")
+	exclude = append(exclude, ".git", ".vscode", ".mp4")
 	if len(*dirPath) == 0 {
 		fmt.Println("Please use --help for how to use rm-duplicate.")
 		return
@@ -56,7 +58,7 @@ func main() {
 			if err != nil {
 				log.Panic("failed to open a file", path)
 			}
-			hash := sha256.New()
+			hash := md5.New()
 
 			if _, err := io.Copy(hash, file); err != nil {
 				log.Panic("calculating file hash failed")
@@ -78,5 +80,19 @@ func main() {
 			delete(fileRecords, key)
 		}
 	}
-	fmt.Println("Total", deleteCount, "files deleted!")
+	for _, records := range fileRecords {
+		count += len(records)
+		fmt.Println("Length: ", len(records))
+		for index, record := range records {
+			if index == 0 {
+				fmt.Println("Skipped: ", record.path)
+				continue
+			}
+			if !*dryRun {
+				// os.Remove(record.path)
+			}
+			fmt.Println("Removing: ", record.path)
+		}
+	}
+	fmt.Println("Total", count, "files deleted!")
 }
